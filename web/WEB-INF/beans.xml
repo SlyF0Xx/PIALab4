@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<enterprise-beans>
+    <entity id="Manual">
+        <ejb-name>Manual</ejb-name>
+        <ejb-class>RESTService</ejb-class>
+    </entity>
+</enterprise-beans>
