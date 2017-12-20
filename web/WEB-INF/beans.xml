@@ -3,6 +3,6 @@
 <enterprise-beans>
     <entity id="Manual">
         <ejb-name>Manual</ejb-name>
-        <ejb-class>RESTService</ejb-class>
+        <ejb-class>DotServiceImpl</ejb-class>
     </entity>
 </enterprise-beans>
