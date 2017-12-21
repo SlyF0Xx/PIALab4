@@ -1,5 +1,7 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -8,33 +10,35 @@ import java.io.Serializable;
 public class Dot implements Serializable{
     @Id()
     @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="DOTS_SEQ")
-    @SequenceGenerator(name="DOTS_SEQ", sequenceName="DOTS_SEQ", allocationSize=1)
+    @SequenceGenerator(name="DOTS_SEQ", sequenceName="dots_id_seq", allocationSize=1)
+    //DOTS_SEQ
     Long id;
 
     @Column(name = "H_X")
-    Integer x;
+    Double x;
 
     @Column(name = "H_Y")
     Double y;
 
     @Column(name = "H_SIZE")
-    Integer size;
+    Double radius;
 
     @Column(name = "H_SHOOT")
-    Boolean shoot;
+    Boolean isCovered;
 
     @ManyToOne()
     @JoinColumn(name= "H_OWNER")
+    @JsonIgnore
     User user;
 
     public Dot() {
     }
 
-    public Dot(Integer x, Double y, Integer size, Boolean shoot, User user) {
+    public Dot(Double x, Double y, Double radius, Boolean isCovered, User user) {
         this.x = x;
         this.y = y;
-        this.size = size;
-        this.shoot = shoot;
+        this.radius = radius;
+        this.isCovered = isCovered;
         this.user = user;
     }
 
@@ -46,11 +50,11 @@ public class Dot implements Serializable{
         this.id = id;
     }
 
-    public Integer getX() {
+    public Double getX() {
         return x;
     }
 
-    public void setX(Integer x) {
+    public void setX(Double x) {
         this.x = x;
     }
 
@@ -62,20 +66,20 @@ public class Dot implements Serializable{
         this.y = y;
     }
 
-    public Integer getSize() {
-        return size;
+    public Double getRadius() {
+        return radius;
     }
 
-    public void setSize(Integer size) {
-        this.size = size;
+    public void setRadius(Double radius) {
+        this.radius = radius;
     }
 
-    public Boolean getShoot() {
-        return shoot;
+    public Boolean getIsCovered() {
+        return isCovered;
     }
 
-    public void setShoot(Boolean shoot) {
-        this.shoot = shoot;
+    public void setIsCovered(Boolean isCovered) {
+        this.isCovered = isCovered;
     }
 
     @Override
@@ -84,8 +88,8 @@ public class Dot implements Serializable{
                 "id=" + id +
                 ", x=" + x +
                 ", y=" + y +
-                ", size=" + size +
-                ", shoot=" + shoot +
+                ", size=" + radius +
+                ", shoot=" + isCovered +
                 ", owner=" + user.toString() +
                 '}';
     }

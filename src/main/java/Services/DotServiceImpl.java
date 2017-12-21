@@ -11,7 +11,7 @@ import javax.ejb.Stateless;
 
 @Local
 @Stateless
-public class DotServiceImpl extends DotService<Integer,Double,Integer> {
+public class DotServiceImpl extends DotService<Double,Double,Double> {
 
     public DotServiceImpl() {
         super(new Area[] {new CurveArea(), new RectangleArea(), new TriangleArea()});

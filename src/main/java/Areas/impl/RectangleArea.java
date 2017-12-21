@@ -2,9 +2,9 @@ package Areas.impl;
 
 import Areas.Area;
 
-public class RectangleArea implements Area<Integer, Double, Integer> {
+public class RectangleArea implements Area<Double, Double, Double> {
     @Override
-    public boolean isIn(Integer x, Double y, Integer size) {
+    public boolean isIn(Double x, Double y, Double size) {
         return x<=0 && y <= 0 && x>=-size/2 && y>=-size;
     }
 }

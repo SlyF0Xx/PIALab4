@@ -40,7 +40,7 @@ public class API {
     @Path("/login")
     @POST
     @Transactional
-    public void login(@FormParam("name") String name,
+    public boolean login(@FormParam("name") String name,
                       @FormParam("password") String password,
                       @Context HttpServletRequest req) {
         //EntityManager entityManager = getEntityManager();
@@ -52,29 +52,43 @@ public class API {
         if(userList.size() == 1 && userList.get(0).getPassword() == password.hashCode() )
         {
             req.getSession().setAttribute("id", userList.get(0).getId());
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
     @Path("/register")
     @POST
     @Transactional
-    public void register(@FormParam("name") String name,
+    public boolean register(@FormParam("name") String name,
                          @FormParam("password") String password,
                          @Context HttpServletRequest req) {
         User user = new User(name, password.hashCode());
         //EntityManager entityManager = getEntityManager();
-        entityManager.persist(user);
-        entityManager.flush();
-        req.getSession().setAttribute("id", user.getId()+1);
+
+        try {
+            entityManager.persist(user);
+            entityManager.flush();
+            req.getSession().setAttribute("id", user.getId());
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+        //user.getId() - if not sequence
     }
 
     @Path("/shoot/{x}/{y}/{size}")
     @GET
     //@Produces(value = {"text/xml", "application/json"})
     @Transactional
-    public String shoot(@PathParam("x") Integer x,
+    public String shoot(@PathParam("x") Double x,
                          @PathParam("y") Double y,
-                         @PathParam("size") Integer size,
+                         @PathParam("size") Double size,
                          @Context HttpServletRequest req) {
         //EntityManager entityManager = getEntityManager();
         List<User> user = entityManager.createQuery("SELECT user FROM User user where user.id = :ident")
@@ -85,10 +99,50 @@ public class API {
             Dot dot = new Dot(x, y, size, dotService.isIn(x, y, size), user.get(0));
             entityManager.persist(dot);
 
-            return dot.getShoot().toString();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            try {
+                return objectMapper.writeValueAsString(dot);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+
+                return "";
+            }
         }
         else {
-            return "false";
+            return "";
+        }
+    }
+
+    @Path("/refreshShoot/{x}/{y}/{size}")
+    @GET
+    //@Produces(value = {"text/xml", "application/json"})
+    @Transactional
+    public String refreshShoot(@PathParam("x") Double x,
+                                @PathParam("y") Double y,
+                                @PathParam("size") Double size,
+                                @Context HttpServletRequest req) {
+        //EntityManager entityManager = getEntityManager();
+        List<User> user = entityManager.createQuery("SELECT user FROM User user where user.id = :ident")
+                .setParameter("ident",req.getSession().getAttribute("id")).getResultList();
+
+        if(user.size() == 1)
+        {
+            Dot dot = new Dot(x, y, size, dotService.isIn(x, y, size), user.get(0));
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            try {
+                return objectMapper.writeValueAsString(dot);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+
+                return "";
+            }
+        }
+        else {
+            return "";
         }
     }
 
@@ -98,10 +152,10 @@ public class API {
     @Transactional
     public boolean existName(@PathParam("name") String name) {
         //EntityManager entityManager = getEntityManager();
-        List<Integer> list = entityManager.createQuery("SELECT COUNT(user) FROM User user where user.name = :name")
+        List<Long> list = entityManager.createQuery("SELECT COUNT(user) FROM User user where user.name = :name")
                 .setParameter("name", name).getResultList();
 
-        return list.get(0) == 1;
+        return list.get(0) == 1L;
     }
 
     @Path("/logout")
@@ -122,7 +176,7 @@ public class API {
         if(req.getSession().getAttribute("id") != null)
         {
             List<Dot> dots = entityManager.createQuery("SELECT d FROM Dot d WHERE d.user.id = :ident")
-                    .setParameter("ident", 1)
+                    .setParameter("ident", req.getSession().getAttribute("id"))
                     .getResultList();
 
             return objectMapper.writeValueAsString(dots);
