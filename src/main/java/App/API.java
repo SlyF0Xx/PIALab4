@@ -158,6 +158,14 @@ public class API {
         return list.get(0) == 1L;
     }
 
+    @Path("/isAuthenticated")
+    @GET
+    @Produces(value = {"text/xml", "application/json"})
+    @Transactional
+    public boolean isAuthenticated(@Context HttpServletRequest req) {
+        return (Integer)req.getSession().getAttribute("id") != 0;
+    }
+
     @Path("/logout")
     @GET
     public void logout(@Context HttpServletRequest req) {
