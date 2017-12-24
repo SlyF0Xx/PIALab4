@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/API")
@@ -40,7 +41,7 @@ public class API {
     @Path("/login")
     @POST
     @Transactional
-    public boolean login(@FormParam("name") String name,
+    public Response login(@FormParam("name") String name,
                       @FormParam("password") String password,
                       @Context HttpServletRequest req) {
         //EntityManager entityManager = getEntityManager();
@@ -52,17 +53,26 @@ public class API {
         if(userList.size() == 1 && userList.get(0).getPassword() == password.hashCode() )
         {
             req.getSession().setAttribute("id", userList.get(0).getId());
-            return true;
+            return Response.ok()
+                    .entity( true)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("POST").build();
         }
         else {
-            return false;
+            //TODO: Может как 400 обработать?
+            return Response.ok()
+                    .entity( false)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("POST").build();
         }
     }
 
     @Path("/register")
     @POST
     @Transactional
-    public boolean register(@FormParam("name") String name,
+    public Response register(@FormParam("name") String name,
                          @FormParam("password") String password,
                          @Context HttpServletRequest req) {
         User user = new User(name, password.hashCode());
@@ -73,11 +83,20 @@ public class API {
             entityManager.flush();
             req.getSession().setAttribute("id", user.getId());
 
-            return true;
+            return Response.ok()
+                    .entity( true)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("POST").build();
         }
         catch (Exception e)
         {
-            return false;
+            //TODO: Может как 400 обработать?
+            return Response.ok()
+                    .entity( false)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("POST").build();
         }
         //user.getId() - if not sequence
     }
@@ -86,7 +105,7 @@ public class API {
     @GET
     //@Produces(value = {"text/xml", "application/json"})
     @Transactional
-    public String shoot(@PathParam("x") Double x,
+    public Response shoot(@PathParam("x") Double x,
                          @PathParam("y") Double y,
                          @PathParam("size") Double size,
                          @Context HttpServletRequest req) {
@@ -103,15 +122,25 @@ public class API {
             ObjectMapper objectMapper = new ObjectMapper();
 
             try {
-                return objectMapper.writeValueAsString(dot);
+                return Response.ok()
+                        .entity( objectMapper.writeValueAsString(dot))
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("GET").build();
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
 
-                return "";
+                return Response.noContent()
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("GET").build();
             }
         }
         else {
-            return "";
+            return Response.noContent()
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("GET").build();
         }
     }
 
@@ -119,7 +148,7 @@ public class API {
     @GET
     //@Produces(value = {"text/xml", "application/json"})
     @Transactional
-    public String refreshShoot(@PathParam("x") Double x,
+    public Response refreshShoot(@PathParam("x") Double x,
                                 @PathParam("y") Double y,
                                 @PathParam("size") Double size,
                                 @Context HttpServletRequest req) {
@@ -134,36 +163,52 @@ public class API {
             ObjectMapper objectMapper = new ObjectMapper();
 
             try {
-                return objectMapper.writeValueAsString(dot);
+                return Response.ok()
+                        .entity( objectMapper.writeValueAsString(dot))
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("GET").build();
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
 
-                return "";
+                Response.noContent()
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("GET").build();
             }
         }
-        else {
-            return "";
-        }
+        return Response.noContent()
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("GET").build();
     }
 
     @Path("/existName/{name}")
     @GET
     @Produces(value = {"text/xml", "application/json"})
     @Transactional
-    public boolean existName(@PathParam("name") String name) {
+    public Response existName(@PathParam("name") String name) {
         //EntityManager entityManager = getEntityManager();
         List<Long> list = entityManager.createQuery("SELECT COUNT(user) FROM User user where user.name = :name")
                 .setParameter("name", name).getResultList();
 
-        return list.get(0) == 1L;
+        return  Response.ok()
+                .entity( list.get(0) == 1L)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                .allow("GET").build();
     }
 
     @Path("/isAuthenticated")
     @GET
     @Produces(value = {"text/xml", "application/json"})
     @Transactional
-    public boolean isAuthenticated(@Context HttpServletRequest req) {
-        return (Integer)req.getSession().getAttribute("id") != 0;
+    public Response isAuthenticated(@Context HttpServletRequest req) {
+        return Response.ok()
+                .entity((Integer)req.getSession().getAttribute("id") != 0)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                .allow("GET").build();
     }
 
     @Path("/logout")
@@ -177,7 +222,7 @@ public class API {
     @GET
     @Produces(value={"text/xml", "application/json"})
     @Transactional
-    public String list(@Context HttpServletRequest req) throws JsonProcessingException {
+    public Response list(@Context HttpServletRequest req) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         //EntityManager entityManager = getEntityManager();
@@ -187,10 +232,17 @@ public class API {
                     .setParameter("ident", req.getSession().getAttribute("id"))
                     .getResultList();
 
-            return objectMapper.writeValueAsString(dots);
+            return Response.ok()
+                    .entity( objectMapper.writeValueAsString(dots))
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("GET").build();
 
         }
-        return "";
+        return Response.noContent()
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                .allow("GET").build();
         /*
          List<User> user = entityManager.createQuery("SELECT user FROM User user WHERE user.id = :id")
                 .setParameter("id", req.getSession().getAttribute("id"))
