@@ -10,8 +10,8 @@ import java.util.List;
 public class User implements Serializable {
     @Id()
     @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="DOT_USER_SEQ")
-    @SequenceGenerator(name="DOT_USER_SEQ", sequenceName="user_id_seq", allocationSize=1)
-    //DOT_USER_SEQ
+    @SequenceGenerator(name="DOT_USER_SEQ", sequenceName="h_dot_user_id_seq", allocationSize=1)
+    //user_id_seq                   DOT_USER_SEQ
     private Long id;
 
     @Column(name = "H_NAME")

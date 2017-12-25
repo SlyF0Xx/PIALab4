@@ -50,22 +50,38 @@ public class API {
                 .setParameter("name", name)
                 .getResultList();
 
-        if(userList.size() == 1 && userList.get(0).getPassword() == password.hashCode() )
+        try {
+            if (userList.size() == 1 && userList.get(0).getPassword() == password.hashCode()) {
+                req.getSession().setAttribute("id", userList.get(0).getId());
+                return Response.ok()
+                        .entity(new ObjectMapper().writeValueAsString(true))
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("POST").build();
+            } else {
+                //TODO: Может как 400 обработать?
+                return Response.ok()
+                        .entity(new ObjectMapper().writeValueAsString(false))
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("POST").build();
+            }
+        }catch (Exception e)
         {
-            req.getSession().setAttribute("id", userList.get(0).getId());
-            return Response.ok()
-                    .entity( true)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-                    .allow("POST").build();
-        }
-        else {
             //TODO: Может как 400 обработать?
-            return Response.ok()
-                    .entity( false)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-                    .allow("POST").build();
+            try {
+                return Response.ok()
+                        .entity(new ObjectMapper().writeValueAsString(false))
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("POST").build();
+            } catch (JsonProcessingException e1) {
+                e1.printStackTrace();
+                return Response.noContent()
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                        .allow("POST").build();
+            }
         }
     }
 
@@ -84,19 +100,27 @@ public class API {
             req.getSession().setAttribute("id", user.getId());
 
             return Response.ok()
-                    .entity( true)
+                    .entity(new ObjectMapper().writeValueAsString(true) )
                     .header("Access-Control-Allow-Origin", "*")
                     .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
                     .allow("POST").build();
         }
         catch (Exception e)
         {
-            //TODO: Может как 400 обработать?
-            return Response.ok()
-                    .entity( false)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-                    .allow("POST").build();
+           try{
+               //TODO: Может как 400 обработать?
+               return Response.ok()
+                       .entity( new ObjectMapper().writeValueAsString(false))
+                       .header("Access-Control-Allow-Origin", "*")
+                       .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                       .allow("POST").build();
+           } catch (JsonProcessingException e1) {
+               e1.printStackTrace();
+               return Response.noContent()
+                       .header("Access-Control-Allow-Origin", "*")
+                       .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                       .allow("POST").build();
+           }
         }
         //user.getId() - if not sequence
     }
@@ -192,23 +216,43 @@ public class API {
         List<Long> list = entityManager.createQuery("SELECT COUNT(user) FROM User user where user.name = :name")
                 .setParameter("name", name).getResultList();
 
-        return  Response.ok()
-                .entity( list.get(0) == 1L)
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-                .allow("GET").build();
+        try {
+            return  Response.ok()
+                    .entity( new ObjectMapper().writeValueAsString(list.get(0) == 1L))
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("GET").build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return  Response.noContent()
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("GET").build();
+        }
     }
 
-    @Path("/isAuthenticated")
+    @Path("/isAuthorized")
     @GET
     @Produces(value = {"text/xml", "application/json"})
     @Transactional
     public Response isAuthenticated(@Context HttpServletRequest req) {
-        return Response.ok()
-                .entity((Integer)req.getSession().getAttribute("id") != 0)
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-                .allow("GET").build();
+        try {
+            return Response.ok()
+                    .entity(
+                            new ObjectMapper().writeValueAsString(
+                                    req.getSession().getAttribute("id") != null && (Long)req.getSession().getAttribute("id") != 0)
+                    )
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("GET").build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+
+            return Response.noContent()
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                    .allow("GET").build();
+        }
     }
 
     @Path("/logout")

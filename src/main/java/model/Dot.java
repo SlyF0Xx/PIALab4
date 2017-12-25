@@ -10,8 +10,8 @@ import java.io.Serializable;
 public class Dot implements Serializable{
     @Id()
     @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="DOTS_SEQ")
-    @SequenceGenerator(name="DOTS_SEQ", sequenceName="dots_id_seq", allocationSize=1)
-    //DOTS_SEQ
+    @SequenceGenerator(name="DOTS_SEQ", sequenceName="h_dots_id_seq", allocationSize=1)
+    //dots_id_seq           DOTS_SEQ
     Long id;
 
     @Column(name = "H_X")
